@@ -1,0 +1,103 @@
+# RSS 源配置
+# 添加新源：复制一个条目，修改 name / url / category 即可
+# category 用于终端输出的分组标题
+
+sources:
+  - name: 36氪
+    url: https://36kr.com/feed
+    category: 商业
+
+  - name: AI News
+    url: https://buttondown.com/ainews/rss
+    category: AI
+
+  - name: 推特热门帖子 AI
+    url: https://sopilot.net/rss/hottweets
+    category: AI
+    lang: zh
+
+  - name: OpenAI Blog
+    url: https://openai.com/news/rss.xml
+    category: AI
+
+  - name: Google DeepMind
+    url: https://deepmind.google/blog/rss.xml
+    category: AI
+
+  - name: ArXiv cs.AI
+    url: https://rss.arxiv.org/rss/cs.AI
+    category: 论文
+
+  - name: ArXiv cs.CL
+    url: https://rss.arxiv.org/rss/cs.CL
+    category: 论文
+
+  - name: ArXiv cs.CV
+    url: https://rss.arxiv.org/rss/cs.CV
+    category: 论文
+
+  - name: Karpathy Curated
+    url: https://youmind.com/rss/pack/andrej-karpathy-curated-rss
+    category: AI
+
+  - name: TLDR AI
+    url: https://tldr.tech/api/rss/ai
+    category: AI
+
+  - name: Hacker News
+    url: https://hnrss.org/frontpage
+    category: 科技
+
+  - name: MIT Tech Review AI
+    url: https://www.technologyreview.com/topic/artificial-intelligence/feed/
+    category: 深度报道
+
+  - name: Wired AI
+    url: https://www.wired.com/feed/tag/ai/latest/rss
+    category: 深度报道
+
+  - name: Ars Technica AI
+    url: https://arstechnica.com/ai/feed/
+    category: 深度报道
+
+  - name: TechCrunch AI
+    url: https://techcrunch.com/category/artificial-intelligence/feed/
+    category: 深度报道
+
+  - name: VentureBeat AI
+    url: https://venturebeat.com/category/ai/feed/
+    category: 深度报道
+
+  - name: Hugging Face Blog
+    url: https://huggingface.co/blog/feed.xml
+    category: AI
+
+  - name: LangChain Blog
+    url: https://blog.langchain.dev/rss/
+    category: 开发工具
+
+  - name: Sebastian Raschka
+    url: https://magazine.sebastianraschka.com/feed
+    category: AI
+
+  - name: Interconnects
+    url: https://www.interconnects.ai/feed
+    category: AI
+
+  - name: Last Week in AI
+    url: https://lastweekin.ai/feed
+    category: AI
+
+  - name: KDnuggets
+    url: https://www.kdnuggets.com/feed
+    category: AI
+
+  - name: InfoQ AI
+    url: https://feed.infoq.com/ai-ml-data-eng/
+    category: 开发工具
+
+# 每个源最多取几条
+max_items_per_source: 10
+
+# 输出分组方式：category / source / none
+group_by: category
