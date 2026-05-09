@@ -1,6 +1,6 @@
 # Hermes-rss
 
-[Hermes Agent](https://github.com/nousresearch/hermes-agent) 的 RSS 聚合 Skill，每天自动从 23 个 AI/科技/商业/论文 RSS 源收集资讯，由 Hermes Agent 的 AI 整理后输出结构化日报。
+[Hermes Agent](https://github.com/nousresearch/hermes-agent) 的 RSS 聚合 Skill，每天自动从配置的 AI、开源、论文、深度报道、开发工具 RSS 源收集资讯，由 Hermes Agent 的 AI 按用户偏好整理成手机友好的资讯菜单。
 
 ## 安装
 
@@ -23,17 +23,18 @@ pip install aiohttp pyyaml
 RSS日报
 ```
 
+## 偏好记录
+
+第一次使用时，Agent 会先询问 3 个偏好问题，并写入 `preferences.yaml`。之后每次输出都会优先展示符合偏好的主题，不符合偏好的内容只保留带标签短标题。
+
 ## 输出格式
 
-Agent 会按以下结构输出日报：
+Agent 会按以下结构输出资讯菜单：
 
-- **🔥 核心主题** — 相关新闻聚类，分析性叙述
-- **🤖 LLM 动态** — 模型发布、工具平台、生态应用
-- **💰 投融资快报** — AI 领域融资动态
-- **🛠️ 开发者工具** — 新框架和工具发布
-- **📰 行业深度** — 深度分析文章
-- **📊 论文精选** — ArXiv 重要论文
-- **💡 编者观察** — 当天趋势分析
+- **重点** — 最多 5 个符合偏好的主题，每条包含判断、值得看、关注点和来源
+- **其他扫过** — 最多 10 条不完全符合偏好但值得知道的带标签短标题
+- **被降权** — 只显示类别和数量，不展开具体内容
+- 用户回复“展开 1 / 深挖 2 / 对比 1 和 3”后，再进入深度解释
 
 ## 自定义 RSS 源
 
@@ -53,6 +54,7 @@ sources:
 | `SKILL.md` | Skill 定义，包含触发词和输出格式指令 |
 | `rss_reader.py` | 抓取 + 去重脚本 |
 | `config.yaml` | RSS 源配置 |
+| `preferences.yaml` | 用户偏好记录 |
 
 ## 去重
 

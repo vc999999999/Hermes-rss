@@ -8,6 +8,7 @@ import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 
 import aiohttp
 
@@ -98,7 +99,7 @@ def parse_rss(xml_text: str) -> list[dict]:
 
 # ── 网络抓取 ─────────────────────────────────────────────
 
-async def fetch_one(session: aiohttp.ClientSession, url: str) -> str | None:
+async def fetch_one(session: aiohttp.ClientSession, url: str) -> Optional[str]:
     try:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
             if resp.status == 200:
@@ -108,7 +109,7 @@ async def fetch_one(session: aiohttp.ClientSession, url: str) -> str | None:
     return None
 
 
-async def fetch_all(urls: list[str]) -> dict[str, str | None]:
+async def fetch_all(urls: list[str]) -> dict[str, Optional[str]]:
     async with aiohttp.ClientSession() as session:
         tasks = {url: asyncio.create_task(fetch_one(session, url)) for url in urls}
         results = {}
