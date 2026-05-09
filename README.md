@@ -38,7 +38,7 @@ Agent 会按以下结构输出资讯菜单：
 
 ## 自定义 RSS 源
 
-编辑 `config.yaml` 添加或删除源：
+编辑 `references/config.yaml` 添加或删除源：
 
 ```yaml
 sources:

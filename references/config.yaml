@@ -69,7 +69,7 @@ sources:
     category: AI
 
   - name: LangChain Blog
-    url: https://blog.langchain.dev/rss/
+    url: https://www.langchain.com/blog/rss.xml
     category: 开发工具
 
   - name: Sebastian Raschka

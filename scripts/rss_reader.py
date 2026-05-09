@@ -76,10 +76,14 @@ def parse_rss(xml_text: str) -> list[dict]:
 
     # RSS 2.0
     for item in root.iter("item"):
+        title = (item.findtext("title") or "").strip()
+        link = (item.findtext("link") or "").strip()
+        if not title or not link:
+            continue
         desc = strip_html(item.findtext("description") or "")
         items.append({
-            "title": (item.findtext("title") or "").strip(),
-            "link": (item.findtext("link") or "").strip(),
+            "title": title,
+            "link": link,
             "description": desc[:200],
             "pubDate": item.findtext("pubDate") or "",
         })
@@ -89,10 +93,14 @@ def parse_rss(xml_text: str) -> list[dict]:
         for entry in root.iter(f"{{{ns['atom']}}}entry"):
             link_el = entry.find(f"{{{ns['atom']}}}link")
             link = link_el.get("href", "") if link_el is not None else ""
+            title = (entry.findtext(f"{{{ns['atom']}}}title") or "").strip()
+            link = link.strip()
+            if not title or not link:
+                continue
             desc = strip_html(entry.findtext(f"{{{ns['atom']}}}summary") or "")
             items.append({
-                "title": (entry.findtext(f"{{{ns['atom']}}}title") or "").strip(),
-                "link": link.strip(),
+                "title": title,
+                "link": link,
                 "description": desc[:200],
                 "pubDate": entry.findtext(f"{{{ns['atom']}}}updated") or "",
             })
