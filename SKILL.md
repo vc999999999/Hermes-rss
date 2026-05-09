@@ -48,7 +48,7 @@ max_other_titles: 10
 ### 第二步：抓取数据
 执行脚本获取原始 RSS 内容：
 ```bash
-python3 ~/.hermes/skills/rss-reader/rss_reader.py
+python3 ~/.hermes/skills/rss-reader/scripts/rss_reader.py
 ```
 
 ### 第三步：按偏好整理第一轮输出
@@ -230,7 +230,7 @@ python3 ~/.hermes/skills/rss-reader/rss_reader.py
 
 ## RSS 源配置
 
-源列表在 `~/.hermes/skills/rss-reader/config.yaml`，用户可随时编辑添加或删除源。
+源列表在 `~/.hermes/skills/rss-reader/references/config.yaml`，用户可随时编辑添加或删除源。
 
 ## 用户偏好配置
 

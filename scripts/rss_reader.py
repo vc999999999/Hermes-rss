@@ -12,8 +12,8 @@ from typing import Optional
 
 import aiohttp
 
-SKILL_DIR = Path(__file__).parent
-CONFIG_PATH = SKILL_DIR / "config.yaml"
+SKILL_DIR = Path(__file__).parent.parent
+CONFIG_PATH = SKILL_DIR / "references" / "config.yaml"
 HISTORY_PATH = Path.home() / ".hermes" / "rss-history.json"
 
 try:

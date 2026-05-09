@@ -52,8 +52,8 @@ sources:
 | 文件 | 用途 |
 |------|------|
 | `SKILL.md` | Skill 定义，包含触发词和输出格式指令 |
-| `rss_reader.py` | 抓取 + 去重脚本 |
-| `config.yaml` | RSS 源配置 |
+| `scripts/rss_reader.py` | 抓取 + 去重脚本 |
+| `references/config.yaml` | RSS 源配置 |
 | `preferences.yaml` | 用户偏好记录 |
 
 ## 去重
