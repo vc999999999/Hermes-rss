@@ -1,0 +1,10 @@
+# 用户偏好模板。
+# 复制为 preferences.yaml 后填写；真实 preferences.yaml 不提交到 GitHub。
+initialized: false
+
+focus: []
+avoid: []
+must_include: []
+summary_style: detailed
+max_focus_topics: 5
+max_other_titles: 10

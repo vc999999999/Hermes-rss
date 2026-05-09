@@ -182,7 +182,7 @@ async def run():
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
 
-    print(f"[RSS Daily Brief — {date_str} {time_str}]")
+    print(f"[RSS Raw Items — {date_str} {time_str}]")
     print(f"共 {total_count} 条新内容 | 来自 {len(sources)} 个源")
     print()
 

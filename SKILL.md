@@ -1,9 +1,9 @@
 ---
 name: rss-reader
-description: 每日 RSS 聚合技能。从配置的 RSS 源收集 AI、开源、论文、深度报道、开发工具等最新资讯，去重后输出标题和链接摘要。触发词：/rss-reader、读RSS、今日资讯、RSS日报。
+description: RSS 资讯菜单技能。从配置的 RSS 源收集 AI、开源、论文、深度报道、开发工具等最新资讯，按用户偏好输出可点选的手机友好摘要。触发词：/rss-reader、读RSS、今日资讯、RSS资讯。
 ---
 
-# RSS Daily Brief
+# RSS 资讯菜单
 
 从配置的 RSS 源抓取最新内容，按用户偏好压缩成手机友好的资讯菜单。第一轮只帮助用户挑选想深挖的方向，不输出一次性长报告。
 
@@ -15,7 +15,7 @@ description: 每日 RSS 聚合技能。从配置的 RSS 源收集 AI、开源、
 cat ~/.hermes/skills/rss-reader/preferences.yaml
 ```
 
-如果文件不存在、为空，或 `initialized` 不是 `true`，不要抓取 RSS。先用聊天方式询问偏好，并在用户回答后更新 `preferences.yaml`。
+如果文件不存在、为空，或 `initialized` 不是 `true`，不要抓取 RSS。先用聊天方式询问偏好，并在用户回答后创建或更新本地 `preferences.yaml`。真实偏好文件是个人数据，不应该提交到 GitHub；仓库只保留 `preferences.example.yaml` 模板。
 
 只问 3 个问题，保持简短：
 ```text
@@ -223,7 +223,7 @@ python3 ~/.hermes/skills/rss-reader/scripts/rss_reader.py
 - 全部用中文
 - 不要照搬 RSS 原文，用自己的话概括和分析
 - 如果某个分类当天没有相关内容，跳过该栏
-- 不要写一次性的完整日报、长篇编者观察或大段行业分析
+- 不要写一次性的完整长报告、长篇编者观察或大段行业分析
 - 保持手机端可读：短句、短行、少层级
 - 严格遵守渐进式披露：第一轮只给菜单，第二轮才展开
 - 末尾附：共 N 条 | 来自 N 个源 | 更新时间

@@ -20,12 +20,12 @@ pip install -r requirements.txt
 /rss-reader
 读RSS
 今日资讯
-RSS日报
+RSS资讯
 ```
 
 ## 偏好记录
 
-第一次使用时，Agent 会先询问 3 个偏好问题，并写入 `preferences.yaml`。之后每次输出都会优先展示符合偏好的主题，不符合偏好的内容只保留带标签短标题。
+第一次使用时，Agent 会先询问 3 个偏好问题，并写入本地 `preferences.yaml`。这个文件只保存个人偏好，不提交到 GitHub。之后每次输出都会优先展示符合偏好的主题，不符合偏好的内容只保留带标签短标题。
 
 ## 输出格式
 
@@ -54,7 +54,7 @@ sources:
 | `SKILL.md` | Skill 定义，包含触发词和输出格式指令 |
 | `scripts/rss_reader.py` | 抓取 + 去重脚本 |
 | `references/config.yaml` | RSS 源配置 |
-| `preferences.yaml` | 用户偏好记录 |
+| `preferences.example.yaml` | 用户偏好模板 |
 
 ## 去重
 
