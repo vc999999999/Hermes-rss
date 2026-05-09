@@ -19,9 +19,12 @@ HISTORY_PATH = Path.home() / ".hermes" / "rss-history.json"
 try:
     import yaml
 except ImportError:
-    import subprocess
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pyyaml", "-q"])
-    import yaml
+    print(
+        "Missing dependency: PyYAML. Install pinned dependencies with "
+        "`python3 -m pip install -r requirements.txt`.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 # ── 配置加载 ──────────────────────────────────────────────

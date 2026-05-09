@@ -9,7 +9,7 @@
 git clone https://github.com/vc999999999/Hermes-rss.git ~/.hermes/skills/rss-reader
 
 # 安装依赖
-pip install aiohttp pyyaml
+pip install -r requirements.txt
 ```
 
 ## 使用
