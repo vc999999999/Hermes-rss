@@ -1,23 +1,61 @@
 ---
 name: rss-reader
-description: RSS 资讯菜单技能。从配置的 RSS 源收集 AI、开源、论文、深度报道、开发工具等最新资讯，按用户偏好输出可点选的手机友好摘要。触发词：/rss-reader、读RSS、今日资讯、RSS资讯。
+description: Use when the user asks to read, fetch, summarize, filter, rank, compare, or expand RSS/news updates, especially AI, agent development, open source, papers, tools, and industry news. Trigger for /rss-reader, 读RSS, 今日资讯, RSS资讯, 今日AI新闻, 展开RSS条目, 对比资讯编号, 修改RSS偏好.
 ---
 
 # RSS 资讯菜单
 
-从配置的 RSS 源抓取最新内容，按用户偏好压缩成手机友好的资讯菜单。第一轮只帮助用户挑选想深挖的方向，不输出一次性长报告。
+Use this skill to turn configured RSS feeds into a preference-aware, mobile-friendly Chinese news menu. Treat the filesystem as the working memory: configuration, preferences, run history, cached raw results, output templates, and known pitfalls all live beside the skill or under the user's cache directory.
 
-## 工作流程
+## Resolve Skill Directory
 
-### 第一步：检查用户偏好
-先读取偏好文件：
+Before reading or writing skill files, resolve the current skill directory. Prefer explicit environment variables, then common personal and project-level locations:
+
 ```bash
-cat ~/.hermes/skills/rss-reader/preferences.yaml
+SKILL_DIR="${RSS_READER_SKILL_DIR:-}"
+if [ -z "$SKILL_DIR" ]; then
+  for dir in \
+    "$PWD" \
+    "$PWD/.claude/skills/rss-reader" \
+    "$PWD/.codex/skills/rss-reader" \
+    "${CLAUDE_HOME:-$HOME/.claude}/skills/rss-reader" \
+    "${CODEX_HOME:-$HOME/.codex}/skills/rss-reader" \
+    "${HERMES_HOME:-$HOME/.hermes}/skills/rss-reader" \
+    "${OPENCLAW_HOME:-$HOME/.openclaw}/skills/rss-reader"; do
+    if [ -f "$dir/SKILL.md" ] && [ -f "$dir/scripts/rss_reader.py" ]; then
+      SKILL_DIR="$dir"
+      break
+    fi
+  done
+fi
 ```
 
-如果文件不存在、为空，或 `initialized` 不是 `true`，不要抓取 RSS。先用聊天方式询问偏好，并在用户回答后创建或更新本地 `preferences.yaml`。真实偏好文件是个人数据，不应该提交到 GitHub；仓库只保留 `preferences.example.yaml` 模板。
+If no directory is found, ask the user where the skill is installed or ask them to set `RSS_READER_SKILL_DIR`.
 
-只问 3 个问题，保持简短：
+## Workflow
+
+1. Check preferences in `preferences.yaml`. If missing, empty, or `initialized` is not `true`, ask the three short setup questions from `preferences.example.yaml` and write the answers locally.
+2. Run `python3 "$SKILL_DIR/scripts/rss_reader.py"` to fetch RSS items. The script reads `references/config.yaml`, deduplicates recently seen links, and writes the latest raw result to the cache.
+3. Summarize the raw result according to `preferences.yaml`. Use `references/output-format.md` as the default first-round menu and expansion format.
+4. When the user asks to expand, compare, view a demoted category, change preferences, or use this result in another workflow, load only the relevant cached raw result and reference file.
+5. After a recurring failure or useful correction, update `references/pitfalls.md` with the symptom, cause, and preferred handling.
+
+## Filesystem Context
+
+- `references/config.yaml`: RSS source list and grouping config.
+- `preferences.yaml`: local personal preferences. Do not commit real user preferences.
+- `preferences.example.yaml`: preference template and first-run defaults.
+- `references/output-format.md`: default output shapes for menu, expansion, comparison, and demoted categories.
+- `references/workflow-contract.md`: input/output contract for orchestration by other agents or workflows.
+- `references/pitfalls.md`: living library of known mistakes and recovery patterns.
+- `scripts/rss_reader.py`: deterministic fetch, parse, dedupe, and cache script.
+- `~/.cache/rss-reader/rss-history.json`: dedupe history.
+- `~/.cache/rss-reader/latest.json`: latest normalized raw result for follow-up expansion.
+
+## Preference Setup
+
+Ask only these three questions on first use:
+
 ```text
 第一次使用，我先记一下你的资讯偏好。之后会按这个筛选。
 
@@ -31,7 +69,8 @@ cat ~/.hermes/skills/rss-reader/preferences.yaml
 可选：极短 / 标准 / 稍详细
 ```
 
-用户回答后，把偏好写入：
+Write the result as YAML:
+
 ```yaml
 initialized: true
 focus:
@@ -45,215 +84,11 @@ max_focus_topics: 5
 max_other_titles: 10
 ```
 
-### 第二步：抓取数据
-执行脚本获取原始 RSS 内容：
-```bash
-python3 ~/.hermes/skills/rss-reader/scripts/rss_reader.py
-```
+## Operating Guidance
 
-### 第三步：按偏好整理第一轮输出
-拿到脚本输出后，根据 `preferences.yaml` 过滤和排序。优先展示 `focus` 命中的主题；`avoid` 命中的内容只在重大事件时保留。
-
-第一轮输出不是报告，而是“可点选的详细资讯菜单”。不要在第一轮给完整深度分析、原文链接列表、长篇评论或一次性日报。用户明确回复“展开 X / 深挖 X / 对比 X 和 Y / 看被降权类别”后，才进入第二轮。
-
-第一轮必须严格使用下面结构：
-
-```markdown
-今天抓到 N 条，按你的偏好整理出 X 个重点。
-偏好：偏好 A / 偏好 B
-可回：展开编号 / 对比编号 / 改偏好 / 看被降权类别
-
-## 重点
-
-1. 主题名
-
-判断：一句话判断这件事的核心变化。
-
-值得看：
-用 2 句解释背景和影响。
-说明它为什么值得你点开。
-
-关注点：
-- 开发：……
-- 产品：……
-- 风险：……
-
-来源：来源 A / 来源 B / 来源 C
-可回：展开 1
-
-## 其他扫过
-- [产品] 短标题总结 1
-- [工具] 短标题总结 2
-- [安全] 短标题总结 3
-
-## 被降权
-
-- 社媒热帖：X 条
-- 论文：X 条
-- 纯融资：X 条
-
-共 N 条 | 来自 N 个源 | 更新时间 HH:MM
-```
-
-**重点区要求：**
-- 只放符合用户偏好的内容，最多 `max_focus_topics` 个
-- 默认 `max_focus_topics` 为 5，不要超过 5 个重点
-- 每个重点必须使用固定字段：`判断`、`值得看`、`关注点`、`来源`、`可回`
-- `判断` 只写 1 句
-- `值得看` 只写 2 句，每句尽量短，适合手机阅读
-- `关注点` 最多 3 条，用短标签开头，例如 `开发`、`产品`、`风险`、`商业`、`行业`
-- `来源` 最多 3 个来源名，第一轮不放 URL
-- `可回` 必须写成 `展开 X`
-
-**其他扫过要求：**
-- 放不完全符合偏好但仍有信息价值的内容
-- 使用带分类标签的短标题
-- 标签从这些里面选：`[模型]`、`[产品]`、`[Agent]`、`[工具]`、`[论文]`、`[公司]`、`[开源]`、`[安全]`、`[监管]`、`[行业]`
-- 每条只允许一行
-- 不写简介，不放链接
-- 最多 `max_other_titles` 条
-- 默认 `max_other_titles` 为 10
-
-**被降权要求：**
-- 保留 `被降权` 区块
-- 只显示类别和数量，不展示具体标题
-- 最多显示 5 类
-- 如果某类虽然命中 `avoid`，但出现重大事件，可以进入 `重点`
-- 用户可回复“看看被降权的论文”或“展开社媒热帖”
-
-### 第四步：按请求渐进展开
-只有当用户明确要求“展开 X / 深挖 X / 对比 X 和 Y / 看被降权类别”时，才输出第二轮内容。
-
-用户要求展开单个编号时，使用下面格式：
-
-```markdown
-# 展开 X：主题名
-
-## 简述
-用 3-5 句讲清楚发生了什么。
-先讲结论，再讲背景。
-不要堆来源原文。
-
-## 为什么重要
-- 开发：……
-- 产品：……
-- 行业：……
-
-## 关键信息
-- ……
-- ……
-- ……
-
-## 我的判断
-用 3-5 句说趋势判断。
-可以说明不确定性，但不要写空泛评论。
-
-## 可继续深挖
-- 技术细节
-- 商业影响
-- 相关产品
-- 未来信号
-- 原文链接
-
-## 来源
-- 来源 A：标题
-  链接
-- 来源 B：标题
-  链接
-```
-
-**展开要求：**
-- `简述` 3-5 句
-- `为什么重要` 固定 3 条
-- `关键信息` 3-6 条
-- `我的判断` 3-5 句
-- `来源` 3-8 条，必须包含标题和链接
-- 不要在展开里混入其他主题，除非用户要求对比
-- 如果信息来自同一 RSS 原始条目，避免重复引用
-
-用户要求对比两个或多个编号时，使用下面格式：
-
-```markdown
-# 对比：主题 A vs 主题 B
-
-## 一句话结论
-用 1 句说明它们最关键的差异。
-
-## 对比表
-| 维度 | 主题 A | 主题 B |
-|---|---|---|
-| 核心变化 | …… | …… |
-| 影响对象 | …… | …… |
-| 短期价值 | …… | …… |
-| 风险 | …… | …… |
-
-## 你该优先看哪个
-用 2-4 句给出建议。
-
-## 可继续深挖
-- 展开 A
-- 展开 B
-- 只看技术差异
-- 只看商业影响
-```
-
-**对比要求：**
-- 只对比用户点名的编号
-- 表格最多 5 个维度
-- 不新增无关主题
-- 如需来源，放在用户继续要求“给来源”时
-
-用户要求查看被降权类别时，使用下面格式：
-
-```markdown
-# 被降权：类别名
-
-- [标签] 短标题 1
-- [标签] 短标题 2
-- [标签] 短标题 3
-```
-
-**被降权展开要求：**
-- 最多 10 条
-- 只给带标签短标题
-- 不写简介，不放链接
-- 用户继续要求“展开某条”时，再按单条展开格式输出
-
-**输出要求：**
-- 全部用中文
-- 不要照搬 RSS 原文，用自己的话概括和分析
-- 如果某个分类当天没有相关内容，跳过该栏
-- 不要写一次性的完整长报告、长篇编者观察或大段行业分析
-- 保持手机端可读：短句、短行、少层级
-- 严格遵守渐进式披露：第一轮只给菜单，第二轮才展开
-- 末尾附：共 N 条 | 来自 N 个源 | 更新时间
-
-## RSS 源配置
-
-源列表在 `~/.hermes/skills/rss-reader/references/config.yaml`，用户可随时编辑添加或删除源。
-
-## 用户偏好配置
-
-偏好记录在 `~/.hermes/skills/rss-reader/preferences.yaml`。用户可以随时要求“修改偏好”“重置偏好”。
-
-字段说明：
-- `initialized`: 是否已完成第一次偏好询问
-- `focus`: 优先展示的主题
-- `avoid`: 尽量少展示的主题
-- `must_include`: 即使不在偏好内也必须关注的主题
-- `summary_style`: `short` / `standard` / `detailed`
-- `max_focus_topics`: 重点区最多主题数
-- `max_other_titles`: 其他扫过最多短标题数
-
-## 输出说明
-
-脚本输出包含：
-- 分类标题（AI、开源、论文、深度报道、开发工具）
-- 每条内容的标题、链接、简介（200字以内）
-- 已自动去除 HTML 标签和重复内容（7天内已推送的不会重复出现）
-
-## 注意事项
-
-- 单个源抓取失败不影响其他源，错误会在输出末尾显示
-- 去重记录保存在 `~/.hermes/rss-history.json`，超过 7 天自动清理
-- 如需立即刷新，可删除 `~/.hermes/rss-history.json` 后重新运行
+- Provide useful defaults instead of rigidly enforcing a format. If the user asks for a different shape, adapt while keeping the same RSS evidence base.
+- Teach only the workflow-specific parts: where files are, how data is fetched, how preferences are applied, and how follow-up expansion works.
+- Keep first-round output as a menu unless the user explicitly asks for a report, deep analysis, links, or a workflow handoff.
+- Use Chinese by default for user-facing output.
+- Do not copy long RSS text verbatim. Summarize in your own words and include links only when expanding or when the user asks.
+- If the feed result is empty, explain whether it is because of dedupe, fetch failures, or genuinely no parsed items. Use `references/pitfalls.md` for recovery.

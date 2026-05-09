@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""RSS 聚合 skill - 抓取原始数据，由 Hermes Agent 的 AI 负责总结"""
+"""RSS 聚合 skill - 抓取原始数据，由宿主 Agent 的 AI 负责总结。"""
 
 import asyncio
 import json
@@ -12,9 +12,11 @@ from typing import Optional
 
 import aiohttp
 
-SKILL_DIR = Path(__file__).parent.parent
+SKILL_DIR = Path(__file__).resolve().parent.parent
 CONFIG_PATH = SKILL_DIR / "references" / "config.yaml"
-HISTORY_PATH = Path.home() / ".hermes" / "rss-history.json"
+HISTORY_PATH = Path.home() / ".cache" / "rss-reader" / "rss-history.json"
+LATEST_PATH = Path.home() / ".cache" / "rss-reader" / "latest.json"
+LEGACY_HISTORY_PATH = Path.home() / ".hermes" / "rss-history.json"
 
 try:
     import yaml
@@ -40,6 +42,9 @@ def load_history():
     if HISTORY_PATH.exists():
         with open(HISTORY_PATH, encoding="utf-8") as f:
             return json.load(f)
+    if LEGACY_HISTORY_PATH.exists():
+        with open(LEGACY_HISTORY_PATH, encoding="utf-8") as f:
+            return json.load(f)
     return {"read_links": {}, "last_run": None}
 
 
@@ -53,6 +58,12 @@ def save_history(history):
     history["last_run"] = datetime.now().isoformat()
     with open(HISTORY_PATH, "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
+
+
+def save_latest(payload):
+    LATEST_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(LATEST_PATH, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
 
 # ── HTML 清理 ────────────────────────────────────────────
@@ -163,7 +174,8 @@ async def run():
         for item in items[:max_items]:
             link = item["link"]
             if link and link not in read_links:
-                item["_source"] = name
+                item["source"] = name
+                item["category"] = category
                 new_items.append(item)
                 read_links[link] = today
 
@@ -177,13 +189,21 @@ async def run():
     history["read_links"] = read_links
     save_history(history)
 
-    # ── 输出原始数据，交给 Hermes AI 处理 ──────────────
+    # ── 输出原始数据，交给宿主 Agent 处理 ──────────────
     now = datetime.now()
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H:%M")
+    save_latest({
+        "generated_at": now.isoformat(timespec="seconds"),
+        "total_count": total_count,
+        "source_count": len(sources),
+        "grouped": grouped,
+        "errors": errors,
+    })
 
-    print(f"[RSS Raw Items — {date_str} {time_str}]")
+    print(f"[RSS Raw Items - {date_str} {time_str}]")
     print(f"共 {total_count} 条新内容 | 来自 {len(sources)} 个源")
+    print(f"缓存: {LATEST_PATH}")
     print()
 
     if not grouped:

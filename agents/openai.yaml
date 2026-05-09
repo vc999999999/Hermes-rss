@@ -1,0 +1,7 @@
+interface:
+  display_name: "RSS Reader"
+  short_description: "按偏好抓取、整理、展开 RSS 资讯"
+  default_prompt: "Use $rss-reader when I ask to fetch, summarize, expand, compare, or update preferences for RSS/news updates."
+
+policy:
+  allow_implicit_invocation: true
